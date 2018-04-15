@@ -23,6 +23,7 @@
   #include <cmath>
   #include <iostream>
   #include "gfximage.hh"
+  using namespace std;
 
   namespace gfx {
 
@@ -200,12 +201,21 @@
       int endwidth=before.width()+2*pad_radius;
       int endheight=before.height()+2*pad_radius;
 
-      after.resize(endwidth, endheight, BLACK.convert_to<color_depth>());
+      after.resize(endwidth, endheight);
       after.fill(BLACK.convert_to<color_depth>());
+
+      /*check size
+      cout<<endl<<pad_radius<<endl;
+      cout<<endl<<before.width()<<" "<<before.height()<<endl;
+      cout<<endl<<after.width()<<" "<<after.height()<<endl;
+      */
 
       for(int i=0;i<before.height();i++)
         for(int j=0;j<before.width();j++)
           after.pixel(j+pad_radius,i+pad_radius)=before.pixel(j,i);
+
+
+      //after.fill(BLUE.convert_to<color_depth>());
 
       // Hint: I can think of two sensible ways of implementing this
       // function. (1) write nine separate loops, one for each of the
@@ -230,11 +240,7 @@
       assert(!before.empty());
       assert(pad_radius > 0);
 
-      // TODO: replace this function body with working code. Make sure
-      // to delete this comment.
-
-      // Hint: This can be implemented with a single call to crop(...).
-
+      crop(after,before,pad_radius,pad_radius,before.width()-2*pad_radius,before.height()-2*pad_radius);
     }
 
     // Convert from color to grayscale. after is filled with a version
@@ -248,10 +254,13 @@
       // Check arguments.
       assert(!before.empty());
 
-      // Hint: You need to multiply each pixel's red, green, and blue
-      // components by a different coefficient. You can find the
-      // coefficients in slide deck 6.
-
+      after=before;
+      for(int i=0;i<before.height();i++)
+        for(int j=0;j<before.width();j++){
+          after.pixel(j,i).red()=after.pixel(j,i).red()*0.2;
+          after.pixel(j,i).green()=after.pixel(j,i).green()*0.7;
+          after.pixel(j,i).blue()=after.pixel(j,i).blue()*0.1;
+        }
     }
 
     // Edge detection. Specifically, convert "before" to grayscale,
