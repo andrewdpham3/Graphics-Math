@@ -3,6 +3,5 @@ Project 2: image processing
 
 Group members:
 
-Ada Lovelace adalovelace@csu.fullerton.edu
-
-Charles Babbage charlesbab@csu.fullerton.edu
+andrew pham andrewpham@csu.fullerton.edu
+monique contreras 
