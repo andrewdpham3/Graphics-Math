@@ -207,7 +207,6 @@
         for(int j=0;j<before.width();j++)
           after.pixel(j+pad_radius,i+pad_radius)=before.pixel(j,i);
 
-      cout<<
       // Hint: I can think of two sensible ways of implementing this
       // function. (1) write nine separate loops, one for each of the
       // regions A-I. This is tedious but relatively foolproof. (2)
