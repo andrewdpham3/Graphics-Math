@@ -20,6 +20,9 @@ int main() {
 
   const bool CREATE_EXAMPLES = false;
 
+  const double HDR_DELTA = .03;   // 3%
+  const int TRUE_COLOR_DELTA = 8; // about 3% of 255
+  
   const std::string example_basename("library_"),
     binary_ppm_path = example_basename + "binary.ppm",
     ascii_ppm_path = example_basename + "ascii.ppm",
@@ -90,11 +93,11 @@ int main() {
 	      1,
 	      [&]() {
 
-                TEST_TRUE("almost_equal handles zero", gfx::almost_equal<float>(0.0, 0.0, .01));
-		TEST_TRUE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0001, 0.0, .01));
-		TEST_TRUE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0, 0.0001, .01));
-		TEST_FALSE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0, 0.1, .01));
-		TEST_FALSE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0, 0.1, .01));
+                TEST_TRUE("almost_equal handles zero", gfx::almost_equal<float>(0.0, 0.0, HDR_DELTA));
+		TEST_TRUE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0001, 0.0, HDR_DELTA));
+		TEST_TRUE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0, 0.0001, HDR_DELTA));
+		TEST_FALSE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0, 0.1, HDR_DELTA));
+		TEST_FALSE("almost_equal handles near-zero", gfx::almost_equal<float>(0.0, 0.1, HDR_DELTA));
 
                 TEST_EQUAL("color_depth::max_value", 255, gfx::true_color_depth::max_value);
 		TEST_EQUAL("color_depth::max_value", 1.0, gfx::hdr_color_depth::max_value);
@@ -208,17 +211,17 @@ int main() {
 		  TEST_TRUE("image::operator!=", true_blue_one_white != true_blue);
 		}
 
-		TEST_TRUE("image::almost_equal", true_empty.almost_equal(true_empty, 2));
-		TEST_TRUE("image::almost_equal", true_blue.almost_equal(true_blue, 2));
-		TEST_TRUE("image::almost_equal", hdr_empty.almost_equal(hdr_empty, .01));
-		TEST_TRUE("image::almost_equal", hdr_black.almost_equal(hdr_black, .01));
-		TEST_FALSE("image::almost_equal", true_empty.almost_equal(true_blue, 2));
-		TEST_FALSE("image::almost_equal", hdr_empty.almost_equal(hdr_black, .01));
+		TEST_TRUE("image::almost_equal", true_empty.almost_equal(true_empty, TRUE_COLOR_DELTA));
+		TEST_TRUE("image::almost_equal", true_blue.almost_equal(true_blue, TRUE_COLOR_DELTA));
+		TEST_TRUE("image::almost_equal", hdr_empty.almost_equal(hdr_empty, HDR_DELTA));
+		TEST_TRUE("image::almost_equal", hdr_black.almost_equal(hdr_black, HDR_DELTA));
+		TEST_FALSE("image::almost_equal", true_empty.almost_equal(true_blue, TRUE_COLOR_DELTA));
+		TEST_FALSE("image::almost_equal", hdr_empty.almost_equal(hdr_black, HDR_DELTA));
 		{
 		  auto one_dark_gray(hdr_black);
 		  one_dark_gray.pixel(299, 399) = gfx::hdr_rgb(0.0, 0.0, .001);
 		  TEST_NOT_EQUAL("image::almost_equal", one_dark_gray, hdr_black);
-		  TEST_TRUE("image::almost_equal", one_dark_gray.almost_equal(hdr_black, .01));
+		  TEST_TRUE("image::almost_equal", one_dark_gray.almost_equal(hdr_black, HDR_DELTA));
 		}
 
 		{
@@ -395,7 +398,7 @@ int main() {
 				 result_true.pixel(x, y));
 
 		      TEST_TRUE("clear_component<hdr_color_depth>",
-				gfx::hdr_rgb(192.0/255.0, 0.0, 192.0/255.0).almost_equal(result_hdr.pixel(x, y), .01));
+				gfx::hdr_rgb(192.0/255.0, 0.0, 192.0/255.0).almost_equal(result_hdr.pixel(x, y), HDR_DELTA));
 		    }
 		  }
 
@@ -406,7 +409,7 @@ int main() {
 			    ppm_read(expected, clear_component_ppm_path));
 		  clear_component(after, before, gfx::RGB_INDEX_GREEN);
 		  TEST_TRUE("clear_component<true_color_depth> : contents",
-			    after.almost_equal(expected, 2));
+			    after.almost_equal(expected, TRUE_COLOR_DELTA));
 		}
 
 		// scale_component
@@ -418,10 +421,10 @@ int main() {
 		  for (int y = 0; y < result_true.height(); ++y) {
 		    for (int x = 0; x < result_true.width(); ++x) {
 		      TEST_TRUE("scale_component<true_color_depth>",
-				gfx::true_color_rgb(0xC0, 230, 0xC0).almost_equal(result_true.pixel(x, y), .01));
+				gfx::true_color_rgb(0xC0, 230, 0xC0).almost_equal(result_true.pixel(x, y), HDR_DELTA));
 
 		      TEST_TRUE("scale_component<hdr_color_depth>",
-				gfx::hdr_rgb(192.0/255.0, 230.0/250.0, 192.0/255.0).almost_equal(result_hdr.pixel(x, y), .02));
+				gfx::hdr_rgb(192.0/255.0, 230.0/250.0, 192.0/255.0).almost_equal(result_hdr.pixel(x, y), HDR_DELTA));
 		    }
 		  }
 		}
@@ -438,7 +441,7 @@ int main() {
 		expected.clear();
 		expected.resize(5, 5, gfx::BLUE);
 		TEST_TRUE("crop<true_color_depth> : small monochrome image",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 
 		TEST_TRUE("crop<true_color_depth> : load before image",
 			  gfx::ppm_read(before, binary_ppm_path));
@@ -448,7 +451,7 @@ int main() {
 
 		crop(after, before, 5, 10, 160, 120);
 		TEST_TRUE("crop<true_color_depth> : contents",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 
 	      });
 
@@ -464,7 +467,7 @@ int main() {
 		expected.clear();
 		expected.resize(5, 5, gfx::BLUE.convert_to<gfx::hdr_color_depth>());
 		TEST_TRUE("crop<hdr_color_depth> : small monochrome image",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 
 		TEST_TRUE("crop<hdr_color_depth> : load before image",
 			  gfx::ppm_read(loaded, binary_ppm_path));
@@ -476,7 +479,7 @@ int main() {
 
 		crop(after, before, 5, 10, 160, 120);
 		TEST_TRUE("crop<hdr_color_depth> : contents",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 
 	      });
 
@@ -491,7 +494,7 @@ int main() {
 		expected.clear();
 		expected.resize(110, 110, gfx::BLUE);
 		TEST_TRUE("extend_edges<true_color_depth> : small monochrome image",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 
 		TEST_TRUE("extend_edges<true_color_depth> : load before image",
 			  gfx::ppm_read(before, binary_ppm_path));
@@ -501,7 +504,7 @@ int main() {
 
 		extend_edges(after, before, 20);
 		TEST_TRUE("extend_edges<true_color_depth> : contents",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 	      });
 
   r.criterion("extend_edges<hdr_color_depth>",
@@ -516,7 +519,7 @@ int main() {
 		expected.clear();
 		expected.resize(110, 110, gfx::BLUE.convert_to<gfx::hdr_color_depth>());
 		TEST_TRUE("extend_edges<hdr_color_depth> : small monochrome image",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 
 		TEST_TRUE("extend_edges<hdr_color_depth> : load before image",
 			  gfx::ppm_read(loaded, binary_ppm_path));
@@ -528,7 +531,7 @@ int main() {
 
 		extend_edges(after, before, 20);
 		TEST_TRUE("extend_edges<hdr_color_depth> : contents",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 
 	      });
 
@@ -543,7 +546,7 @@ int main() {
 		expected.clear();
 		expected.resize(90, 90, gfx::BLUE);
 		TEST_TRUE("crop_extended_edges<true_color_depth> : small monochrome image",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 
 		TEST_TRUE("crop_extended_edges<true_color_depth> : load before image",
 			  gfx::ppm_read(before, extend_edges_ppm_path));
@@ -553,7 +556,7 @@ int main() {
 
 		gfx::crop_extended_edges(after, before, 20);
 		TEST_TRUE("crop_extended_edges<true_color_depth> : contents",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 	      });
 
   r.criterion("crop_extended_edges<hdr_color_depth>",
@@ -568,7 +571,7 @@ int main() {
 		expected.clear();
 		expected.resize(90, 90, gfx::BLUE.convert_to<gfx::hdr_color_depth>());
 		TEST_TRUE("crop_extended_edges<hdr_color_depth> : small monochrome image",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 
 		TEST_TRUE("crop_extended_edges<hdr_color_depth> : load before image",
 			  gfx::ppm_read(loaded, extend_edges_ppm_path));
@@ -580,7 +583,7 @@ int main() {
 
 		gfx::crop_extended_edges(after, before, 20);
 		TEST_TRUE("crop_extended_edges<hdr_color_depth> : contents",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 	      });
 
         r.criterion("grayscale<true_color_depth>",
@@ -596,7 +599,7 @@ int main() {
 
       		gfx::grayscale(after, before);
       		TEST_TRUE("grayscale<true_color_depth> : contents",
-      			  after.almost_equal(expected, 2));
+      			  after.almost_equal(expected, TRUE_COLOR_DELTA));
       	      });
 
         r.criterion("grayscale<hdr_color_depth>",
@@ -615,7 +618,7 @@ int main() {
 
       		gfx::grayscale(after, before);
       		TEST_TRUE("grayscale<hdr_color_depth> : contents",
-      			  after.almost_equal(expected, .01));
+      			  after.almost_equal(expected, HDR_DELTA));
       	      });
 
   r.criterion("edge_detect<true_color_depth>",
@@ -631,7 +634,7 @@ int main() {
 
 		gfx::edge_detect(after, before);
 		TEST_TRUE("edge_detect<true_color_depth> : contents",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 	      });
 
   r.criterion("edge_detect<hdr_color_depth>",
@@ -650,7 +653,7 @@ int main() {
 
 		gfx::edge_detect(after, before);
 		TEST_TRUE("edge_detect<hdr_color_depth> : contents",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 	      });
 
   r.criterion("box_blur<true_color_depth>",
@@ -666,7 +669,7 @@ int main() {
 
 		gfx::box_blur(after, before, 3);
 		TEST_TRUE("box_blur<true_color_depth> : contents",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 
 		TEST_TRUE("box_blur<true_color_depth> : load before image",
 			  gfx::ppm_read(before, binary_ppm_path));
@@ -676,7 +679,7 @@ int main() {
 
 		gfx::box_blur(after, before, 5);
 		TEST_TRUE("box_blur<true_color_depth> : contents",
-			  after.almost_equal(expected, 2));
+			  after.almost_equal(expected, TRUE_COLOR_DELTA));
 	      });
 
   r.criterion("box_blur<hdr_color_depth>",
@@ -695,7 +698,7 @@ int main() {
 
 		gfx::box_blur(after, before, 3);
 		TEST_TRUE("box_blur<hdr_color_depth> : contents",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 
 		TEST_TRUE("box_blur<hdr_color_depth> : load before image",
 			  gfx::ppm_read(loaded, binary_ppm_path));
@@ -707,7 +710,7 @@ int main() {
 
 		gfx::box_blur(after, before, 5);
 		TEST_TRUE("box_blur<hdr_color_depth> : contents",
-			  after.almost_equal(expected, .01));
+			  after.almost_equal(expected, HDR_DELTA));
 	      });
 
   return r.run();
