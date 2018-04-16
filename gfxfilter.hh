@@ -253,13 +253,19 @@
 
 			//section f right
 			for(int i=0;i<before.height();i++)
-				for(int j=0;j<pad_radius;j++)
-					after.pixel(j+before.width()+pad_radius,i+pad_radius-1)=before.pixel(before.width()-1,i);
+				for(int j=0;j<pad_radius;j++){
+					int x=j+before.width()+pad_radius;
+					int y=i+pad_radius;
+					if(x==109 && y==104){
+						cout<<"BREAK:"<<x<<","<<y;
+						break;
+					}
+					after.pixel(x,y)=before.pixel(before.width()-1,i);
+					cout<<"("<<x<<","<<y<<") ";
+				}
 
-			//cout<<endl<<after.pixel(0,0).blue()<<endl;
-			//before.pixel(before.width()-1,before.height()-1).blue()=0;
-			//cout<<endl<<before.pixel(before.width()-1,before.height()-1).blue()<<endl;
-			//cout<<endl<<after.pixel(after.width()-1,pad_radius+before.height()).red()<<" "<<after.pixel(after.width()-1,pad_radius+before.height()).green()<<" "<<after.pixel(after.width()-1,pad_radius+before.height()).blue()<<endl;
+			cout<<"\nLAST PIXEL...\n";
+			after.pixel(109,104)=before.pixel(before.width()-1,before.height()-1);
 		}
 
 		// Crop away the padding created by extend_edges. If before was
