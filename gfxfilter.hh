@@ -328,29 +328,30 @@
 
 
 			//iterate through all pixels on inside of edges, or before image
-			for(int x=1;x<before.width();x++)
-				for(int y=1;y=before.height();y++){
+			for(int px=1;px<before.width();px++)
+				for(int py=1;py<before.height();py++){
 
 					//populate a with surrounding pixels
 					for(int i=0;i<3;i++)
 						for(int j=0;j<3;j++)
-							a[i][j]=after.pixel(x-1,y-1);
+							a[i][j]=after.pixel(px-1,py-1).red();
+					//cout<<"a populated";
 
 					//multiply a by b to compute gx
-					for (i = 0; i < 3; i++){
-        		for (j = 0; j < 3; j++){
+					for (int i = 0; i < 3; i++){
+        		for (int j = 0; j < 3; j++){
             	a[i][j] = 0;
-            	for (k = 0; k < 3; k++){
+            	for (int k = 0; k < 3; k++){
                 gx[i][j] += a[i][k] * b[k][j];
             	}	
         		}
     			}
 
     			//multiply a by c to compute gy
-					for (i = 0; i < 3; i++){
-        		for (j = 0; j < 3; j++){
+					for (int i = 0; i < 3; i++){
+        		for (int j = 0; j < 3; j++){
             	a[i][j] = 0;
-            	for (k = 0; k < 3; k++){
+            	for (int k = 0; k < 3; k++){
                 gy[i][j] += a[i][k] * b[k][j];
             	}	
         		}
