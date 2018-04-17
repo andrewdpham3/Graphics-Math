@@ -286,10 +286,10 @@
 			assert(!before.empty());
 
 			after=before;
-			for(int i=0;i<after.height();i++)
+			for(int i=0;i<after.height();i++)//for every pixel
 				for(int j=0;j<after.width();j++){
-					int gray=(after.pixel(j,i).red()*0.2+after.pixel(j,i).green()*0.7+after.pixel(j,i).blue()*0.1);
-					after.pixel(j,i).red()=gray;
+					int gray=(after.pixel(j,i).red()*0.2+after.pixel(j,i).green()*0.7+after.pixel(j,i).blue()*0.1);//find the sum of the values times multipliers from slids
+					after.pixel(j,i).red()=gray;//assign to every color value
 					after.pixel(j,i).green()=gray;
 					after.pixel(j,i).blue()=gray;
 				}
@@ -305,74 +305,32 @@
 			// Check arguments.
 			assert(!before.empty());
 
-			// TODO: replace this function body with working code. Make sure
-			// to delete this comment.
+	        grayscale(after, before);
+	        extend_edges(after, before, 1);
+	        
+	        int sobel[3][3]={
+	        	{-1,0,1},
+	        	{-2,0,2},
+	        	{-1,0,1}
+	        };
 
-			grayscale(after,before);
-			extend_edges(after,before,1);
+	        for(int x=0;x<after.width();x++)//for every pixel
+	          for(int y=0;y<after.height();y++) {
+	  			float pixels[3][3];
 
-			//create the matricies
-			int a[3][3],
+	  			//find gradient by multiplying corresponding spot with sobel operator, then sum every number in matrix
+	            int sum=0;
+	            for(int i=0;i<3;i++)
+	              for(int j=0;j<3;j++)
+	              	sum+=pixels[i][j]*sobel[i][j];
+	            
+	            //assign the gradient to pixel
+	            for(int i=0;i<3;i++)
+	                after.pixel(x, y)[i] = sum;
+	            }
 
-			b[3][3]={
-				{1,0,-1},
-				{2,0,-2},
-				{1,0,-1},
-			},
-
-			c[3][3]={
-				{1,2,1},
-				{0,0,0},
-				{-1,-2,-1},
-			};
-
-			float g=0,gx=0,gy=0;
-
-			//iterate through all pixels on inside of edges, or before image
-			for(int x=1;x<before.width();x++)
-				for(int y=1;y<before.height();y++){
-
-					//populate a with surrounding pixels
-					for(int i=0;i<3;i++)
-						for(int j=0;j<3;j++)
-							a[i][j]=after.pixel(x-1,y-1).red();
-					//cout<<"a populated";
-
-					//multiply corresponding locations in matricies
-					for(int i=0;i<3;i++)
-						for(int j=0;j<3;j++)
-							b[i][j]*=a[i][j];
-
-					//multiply corresponding locations in matricies
-					for(int i=0;i<3;i++)
-						for(int j=0;j<3;j++)
-							c[i][j]*=a[i][j];
-
-					//add all numbers in matricies to get gradient
-					for(int i=0;i<3;i++)
-						for(int j=0;j<3;j++)
-							gx+=b[i][j];
-
-					for(int i=0;i<3;i++)
-						for(int j=0;j<3;j++)
-							gy+=c[i][j];
-
-					//g=sqrt(pow(gx,2)+pow(gy,2));
-					g=pow(gx,0)+pow(gy,0);
-
-					after.pixel(x,y).red()=g;
-					after.pixel(x,y).green()=g;
-					after.pixel(x,y).blue()=g;
-
-				}
-
-			gfx::image<color_depth> copy=after;
+	        gfx::image<color_depth> copy=after;
 			crop_extended_edges(after,copy,1);
-
-			// Hint: Use the grayscale(...) and extend_edges(...) filters to
-			// prepare for the Sobel convolution. Then compute the Sobel
-			// operator one pixel at a time. Finally use crop_extended_edges
-			// to un-do the earlier extend_edges.
 
 		}
 
@@ -388,17 +346,20 @@
 			assert(!before.empty());
 			assert(radius > 0);
 
-			// Hint: This is a straighforward application of a convolution
-			// filter. The box filter is defined in section 9.3.1 of the
-			// textbook. Section 9.4 of the textbook explains how to implement
-			// a convolution filter in detail.
+	        after.same_size(before);
 
-			// Another hint: Evaluating the box filter will involve a lot of
-			// rounding issues when the color intensities are int types. I
-			// found it easier to first convert the source image to an
-			// hdr_image, then compute the box filter entirely using floating
-			// point calculations, then finally convert the resulting image
-			// back to the original color_depth.
+	        for(int x=0;x<after.width();x++)//for every pixel...
+	          for (int y=0;y<after.height();y++){
 
+	            //calculate average
+	            float sum=0;
+	            for(int i=0;i<3;i++)
+	            	sum+=after.pixel(x,y)[i]+after.pixel(x,y)[i]+after.pixel(x,y)[i];
+	            float avg=sum/9;
 
-	}
+	            //assign to all values of current pixel
+	            for(int i=0;i<3;i++)
+	            	after.pixel(x, y)[i]=avg;
+	           }
+    	}	
+}
