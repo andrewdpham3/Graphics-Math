@@ -195,13 +195,10 @@
 			assert(!before.empty());
 			assert(pad_radius > 0);
 
-			// TODO: replace this function body with working code. Make sure
-			// to delete this comment.
-
 			//resize the image
 			int endwidth=before.width()+2*pad_radius;
 			int endheight=before.height()+2*pad_radius;
-			after.resize(endwidth, endheight, BLACK.convert_to<color_depth>());
+			after.resize(endwidth, endheight);
 
 			/*check size
 			cout<<endl<<pad_radius<<endl;
@@ -228,12 +225,12 @@
 			//section g bottom left
 			for(int i=0;i<pad_radius;i++)
 				for(int j=0;j<pad_radius;j++)
-					after.pixel(j,i+before.height()+pad_radius)=before.pixel(before.height()-1,0);
+					after.pixel(j,i+before.height()+pad_radius)=before.pixel(0,before.height()-1);
 
 			//section i bottom right
 			for(int i=0;i<pad_radius;i++)
 				for(int j=0;j<pad_radius;j++)
-					after.pixel(j+before.width()+pad_radius,i+before.height()+pad_radius)=before.pixel(before.height()-1,before.width()-1);
+					after.pixel(j+before.width()+pad_radius,i+before.height()+pad_radius)=before.pixel(before.width()-1,before.height()-1);
 
 			//middle sections...
 			//section b top
@@ -256,16 +253,8 @@
 				for(int j=0;j<pad_radius;j++){
 					int x=j+before.width()+pad_radius;
 					int y=i+pad_radius;
-					if(x==109 && y==104){
-						cout<<"BREAK:"<<x<<","<<y;
-						break;
-					}
 					after.pixel(x,y)=before.pixel(before.width()-1,i);
-					cout<<"("<<x<<","<<y<<") ";
 				}
-
-			cout<<"\nLAST PIXEL...\n";
-			after.pixel(109,104)=before.pixel(before.width()-1,before.height()-1);
 		}
 
 		// Crop away the padding created by extend_edges. If before was
@@ -297,11 +286,12 @@
 			assert(!before.empty());
 
 			after=before;
-			for(int i=0;i<before.height();i++)
-				for(int j=0;j<before.width();j++){
-					after.pixel(j,i).red()=after.pixel(j,i).red()*0.2;
-					after.pixel(j,i).green()=after.pixel(j,i).green()*0.7;
-					after.pixel(j,i).blue()=after.pixel(j,i).blue()*0.1;
+			for(int i=0;i<after.height();i++)
+				for(int j=0;j<after.width();j++){
+					int gray=(after.pixel(j,i).red()*0.2+after.pixel(j,i).green()*0.7+after.pixel(j,i).blue()*0.1);
+					after.pixel(j,i).red()=gray;
+					after.pixel(j,i).green()=gray;
+					after.pixel(j,i).blue()=gray;
 				}
 		}
 
@@ -318,6 +308,59 @@
 			// TODO: replace this function body with working code. Make sure
 			// to delete this comment.
 
+			grayscale(after,before);
+			extend_edges(after,before,1);
+
+			//create the matricies
+			float a[3][3], gx[3][3],gy[3][3],
+
+			b[3][3]={
+				{1,0,-1},
+				{2,0,-2},
+				{1,0,-1},
+			},
+
+			c[3][3]={
+				{1,2,1},
+				{0,0,0},
+				{-1,-2,-1},
+			};
+
+
+			//iterate through all pixels on inside of edges, or before image
+			for(int x=1;x<before.width();x++)
+				for(int y=1;y=before.height();y++){
+
+					//populate a with surrounding pixels
+					for(int i=0;i<3;i++)
+						for(int j=0;j<3;j++)
+							a[i][j]=after.pixel(x-1,y-1);
+
+					//multiply a by b to compute gx
+					for (i = 0; i < 3; i++){
+        		for (j = 0; j < 3; j++){
+            	a[i][j] = 0;
+            	for (k = 0; k < 3; k++){
+                gx[i][j] += a[i][k] * b[k][j];
+            	}	
+        		}
+    			}
+
+    			//multiply a by c to compute gy
+					for (i = 0; i < 3; i++){
+        		for (j = 0; j < 3; j++){
+            	a[i][j] = 0;
+            	for (k = 0; k < 3; k++){
+                gy[i][j] += a[i][k] * b[k][j];
+            	}	
+        		}
+    			}
+
+					//after.pixel(x,y).red()=sqrt(pow(gx,2)+pow(gy,2));//todo change intensity of green blue
+				}
+
+
+			crop_extended_edges(after,before,1);
 			// Hint: Use the grayscale(...) and extend_edges(...) filters to
 			// prepare for the Sobel convolution. Then compute the Sobel
 			// operator one pixel at a time. Finally use crop_extended_edges
