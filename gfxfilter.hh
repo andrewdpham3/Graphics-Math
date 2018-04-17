@@ -312,7 +312,7 @@
 			extend_edges(after,before,1);
 
 			//create the matricies
-			float a[3][3], gx[3][3],gy[3][3],
+			int a[3][3],
 
 			b[3][3]={
 				{1,0,-1},
@@ -326,42 +326,49 @@
 				{-1,-2,-1},
 			};
 
+			float g=0,gx=0,gy=0;
 
 			//iterate through all pixels on inside of edges, or before image
-			for(int px=1;px<before.width();px++)
-				for(int py=1;py<before.height();py++){
+			for(int x=1;x<before.width();x++)
+				for(int y=1;y<before.height();y++){
 
 					//populate a with surrounding pixels
 					for(int i=0;i<3;i++)
 						for(int j=0;j<3;j++)
-							a[i][j]=after.pixel(px-1,py-1).red();
+							a[i][j]=after.pixel(x-1,y-1).red();
 					//cout<<"a populated";
 
-					//multiply a by b to compute gx
-					for (int i = 0; i < 3; i++){
-        		for (int j = 0; j < 3; j++){
-            	a[i][j] = 0;
-            	for (int k = 0; k < 3; k++){
-                gx[i][j] += a[i][k] * b[k][j];
-            	}	
-        		}
-    			}
+					//multiply corresponding locations in matricies
+					for(int i=0;i<3;i++)
+						for(int j=0;j<3;j++)
+							b[i][j]*=a[i][j];
 
-    			//multiply a by c to compute gy
-					for (int i = 0; i < 3; i++){
-        		for (int j = 0; j < 3; j++){
-            	a[i][j] = 0;
-            	for (int k = 0; k < 3; k++){
-                gy[i][j] += a[i][k] * b[k][j];
-            	}	
-        		}
-    			}
+					//multiply corresponding locations in matricies
+					for(int i=0;i<3;i++)
+						for(int j=0;j<3;j++)
+							c[i][j]*=a[i][j];
 
-					//after.pixel(x,y).red()=sqrt(pow(gx,2)+pow(gy,2));//todo change intensity of green blue
+					//add all numbers in matricies to get gradient
+					for(int i=0;i<3;i++)
+						for(int j=0;j<3;j++)
+							gx+=b[i][j];
+
+					for(int i=0;i<3;i++)
+						for(int j=0;j<3;j++)
+							gy+=c[i][j];
+
+					//g=sqrt(pow(gx,2)+pow(gy,2));
+					g=pow(gx,0)+pow(gy,0);
+
+					after.pixel(x,y).red()=g;
+					after.pixel(x,y).green()=g;
+					after.pixel(x,y).blue()=g;
+
 				}
 
+			gfx::image<color_depth> copy=after;
+			crop_extended_edges(after,copy,1);
 
-			crop_extended_edges(after,before,1);
 			// Hint: Use the grayscale(...) and extend_edges(...) filters to
 			// prepare for the Sobel convolution. Then compute the Sobel
 			// operator one pixel at a time. Finally use crop_extended_edges
@@ -393,6 +400,5 @@
 			// point calculations, then finally convert the resulting image
 			// back to the original color_depth.
 
-		}
 
 	}
